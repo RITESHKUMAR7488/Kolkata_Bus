@@ -1,0 +1,22 @@
+# Kolkata Travel Router - robots.txt
+# https://kolkatatravelrouter.in/
+
+User-agent: *
+Allow: /
+
+# Block any build artifacts or private paths
+Disallow: /dist/
+Disallow: /node_modules/
+Disallow: /scratch/
+Disallow: /*.json$
+
+# Crawl-delay for non-Google bots
+User-agent: Bingbot
+Crawl-delay: 10
+
+User-agent: Slurp
+Crawl-delay: 10
+
+# Sitemaps
+Sitemap: https://kolkatatravelrouter.in/sitemap.xml
+Sitemap: https://kolkatatravelrouter.in/sitemap-images.xml

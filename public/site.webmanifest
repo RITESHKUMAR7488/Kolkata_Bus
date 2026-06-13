@@ -1,0 +1,45 @@
+{
+  "name": "Kolkata Travel Router",
+  "short_name": "KolkataRouter",
+  "description": "Plan your bus, metro, and local train journey across Kolkata with smart routing and interactive maps.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#111118",
+  "theme_color": "#FF6B35",
+  "lang": "en-IN",
+  "dir": "ltr",
+  "scope": "/",
+  "categories": ["travel", "navigation", "transportation"],
+  "keywords": "Kolkata bus route, metro map, local train, transport planner",
+  "screenshots": [
+    {
+      "src": "/og-image.png",
+      "sizes": "1200x630",
+      "type": "image/png",
+      "label": "Kolkata Travel Router home screen"
+    }
+  ],
+  "icons": [
+    {
+      "src": "/favicon-16x16.png",
+      "sizes": "16x16",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
+}

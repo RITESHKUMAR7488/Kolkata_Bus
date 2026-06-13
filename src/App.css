@@ -1,0 +1,51 @@
+/* App-specific styles */
+
+/* Leaflet popup dark theme */
+.dark-popup .leaflet-popup-content-wrapper {
+  background: #1C1C28;
+  color: #F1F1F4;
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+}
+
+.dark-popup .leaflet-popup-tip {
+  background: #1C1C28;
+}
+
+.dark-popup .leaflet-popup-close-button {
+  color: #9CA3AF;
+}
+
+.dark-popup .leaflet-popup-close-button:hover {
+  color: #F1F1F4;
+}
+
+/* Smooth transitions for theme changes */
+* {
+  transition-property: background-color, border-color;
+  transition-duration: 200ms;
+  transition-timing-function: ease;
+}
+
+/* Prevent text selection on interactive elements */
+button, .ripple {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Ensure inputs have proper tap highlight on mobile */
+input, button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Focus visible for accessibility */
+*:focus-visible {
+  outline: 2px solid #FF6B35;
+  outline-offset: 2px;
+}
+
+/* Custom marker styling */
+.custom-marker {
+  background: transparent !important;
+  border: none !important;
+}
