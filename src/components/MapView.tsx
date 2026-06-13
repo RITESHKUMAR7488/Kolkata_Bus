@@ -3,17 +3,14 @@ import { MapContainer, TileLayer, Polyline, Marker, Popup, Tooltip, useMap } fro
 import { useAppStore } from '@/store/useAppStore';
 import { getBusFullRoute } from '@/lib/routingEngine';
 import type { RouteResult } from '@/types';
-import { Navigation, ZoomIn, ZoomOut, Maximize, Train } from 'lucide-react';
+import { Navigation, ZoomIn, ZoomOut, Maximize } from 'lucide-react';
 import L from 'leaflet';
 import { useRef } from 'react';
 import { metroLines, metroStations } from '@/data/metroData';
 import { trainLines, trainStations } from '@/data/trainData';
-import busDataRaw from '@/data/busdata.json';
 import trainGeometriesRaw from '@/data/trainGeometries.json';
-import type { BusData } from '@/types';
 
-const busData = busDataRaw as BusData;
-const trainGeometries = trainGeometriesRaw as Record<string, [number, number][]>;
+const trainGeometries = trainGeometriesRaw as unknown as Record<string, [number, number][]>;
 
 // Custom marker icons
 const startIcon = L.divIcon({
@@ -164,7 +161,6 @@ export default function MapView() {
   const metroView = useAppStore((s) => s.metroView);
   const trainView = useAppStore((s) => s.trainView);
   const selectedTrainLine = useAppStore((s) => s.selectedTrainLine);
-  const setSelectedTrainLine = useAppStore((s) => s.setSelectedTrainLine);
 
   // Determine what to show on the map
   const mapData = useMemo(() => {
