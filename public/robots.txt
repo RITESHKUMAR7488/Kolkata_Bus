@@ -1,5 +1,5 @@
 # Kolkata Travel Router - robots.txt
-# https://kolkatatravelrouter.in/
+# https://kolkata-bus.vercel.app/
 
 User-agent: *
 Allow: /
@@ -18,5 +18,5 @@ User-agent: Slurp
 Crawl-delay: 10
 
 # Sitemaps
-Sitemap: https://kolkatatravelrouter.in/sitemap.xml
-Sitemap: https://kolkatatravelrouter.in/sitemap-images.xml
+Sitemap: https://kolkata-bus.vercel.app/sitemap.xml
+Sitemap: https://kolkata-bus.vercel.app/sitemap-images.xml

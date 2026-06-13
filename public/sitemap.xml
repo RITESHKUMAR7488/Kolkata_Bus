@@ -6,17 +6,17 @@
 
   <!-- Main Homepage -->
   <url>
-    <loc>https://kolkatatravelrouter.in/</loc>
+    <loc>https://kolkata-bus.vercel.app/</loc>
     <lastmod>2026-06-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
-    <xhtml:link rel="alternate" hreflang="en-IN" href="https://kolkatatravelrouter.in/" />
+    <xhtml:link rel="alternate" hreflang="en-IN" href="https://kolkata-bus.vercel.app/" />
     <mobile:mobile />
   </url>
 
   <!-- Bus Route Planner (hash routes are single-page sections) -->
   <url>
-    <loc>https://kolkatatravelrouter.in/#bus</loc>
+    <loc>https://kolkata-bus.vercel.app/#bus</loc>
     <lastmod>2026-06-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
@@ -25,7 +25,7 @@
 
   <!-- Metro Map -->
   <url>
-    <loc>https://kolkatatravelrouter.in/#metro</loc>
+    <loc>https://kolkata-bus.vercel.app/#metro</loc>
     <lastmod>2026-06-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
@@ -34,7 +34,7 @@
 
   <!-- Train Network -->
   <url>
-    <loc>https://kolkatatravelrouter.in/#train</loc>
+    <loc>https://kolkata-bus.vercel.app/#train</loc>
     <lastmod>2026-06-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>

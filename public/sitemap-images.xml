@@ -2,13 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
-    <loc>https://kolkatatravelrouter.in/</loc>
+    <loc>https://kolkata-bus.vercel.app/</loc>
     <image:image>
-      <image:loc>https://kolkatatravelrouter.in/og-image.png</image:loc>
+      <image:loc>https://kolkata-bus.vercel.app/og-image.png</image:loc>
       <image:title>Kolkata Travel Router - Interactive Bus, Metro and Train Map</image:title>
       <image:caption>Plan your journey across Kolkata using bus, metro, and local train routes with an interactive map.</image:caption>
       <image:geo_location>Kolkata, West Bengal, India</image:geo_location>
-      <image:license>https://kolkatatravelrouter.in/</image:license>
+      <image:license>https://kolkata-bus.vercel.app/</image:license>
     </image:image>
   </url>
 </urlset>
