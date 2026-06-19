@@ -11,7 +11,7 @@ import {
 interface AppActions {
   setTheme: (theme: 'light' | 'dark') => void;
   toggleTheme: () => void;
-  setActiveTab: (tab: 'journey' | 'bus' | 'metro' | 'train') => void;
+  setActiveTab: (tab: 'journey' | 'bus' | 'metro' | 'train' | 'ferry') => void;
   setMetroView: (view: 'schematic' | 'map') => void;
   setTrainView: (view: 'schematic' | 'map') => void;
   setFromStop: (stop: string) => void;

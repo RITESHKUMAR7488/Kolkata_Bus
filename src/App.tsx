@@ -8,6 +8,7 @@ import MapView from '@/components/MapView';
 import MapLegend from '@/components/MapLegend';
 import MetroDiagram from '@/components/MetroDiagram';
 import TrainDiagram from '@/components/TrainDiagram';
+import FerryDiagram from '@/components/FerryDiagram';
 import SEOContent from '@/components/SEOContent';
 import './App.css';
 
@@ -24,6 +25,24 @@ function App() {
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     if (prefersDark && theme === 'light') {
       useAppStore.getState().setTheme('dark');
+    }
+  }, []);
+
+  // ── Read URL params on mount (Share Route feature) ──────────────────────
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const from = params.get('from');
+    const to = params.get('to');
+    if (from && to) {
+      const store = useAppStore.getState();
+      store.setFromStop(from);
+      store.setToStop(to);
+      // Small delay to let the store hydrate
+      setTimeout(() => {
+        useAppStore.getState().searchRoutes();
+      }, 200);
+      // Clean the URL so it doesn't re-trigger on refresh
+      window.history.replaceState({}, '', window.location.pathname);
     }
   }, []);
 
@@ -114,6 +133,8 @@ function App() {
               </div>
             )}
           </div>
+        ) : activeTab === 'ferry' ? (
+          <FerryDiagram />
         ) : (
           <>
             <SearchPanel />
@@ -129,6 +150,7 @@ function App() {
             </div>
           </>
         )}
+
         <SEOContent />
       </main>
     </div>

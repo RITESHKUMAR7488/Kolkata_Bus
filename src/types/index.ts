@@ -65,7 +65,7 @@ export interface SearchState {
 
 export interface AppState {
   theme: 'light' | 'dark';
-  activeTab: 'journey' | 'bus' | 'metro' | 'train';
+  activeTab: 'journey' | 'bus' | 'metro' | 'train' | 'ferry';
   metroView: 'schematic' | 'map';
   trainView: 'schematic' | 'map';
   search: SearchState;
@@ -76,4 +76,33 @@ export interface AppState {
   loading: boolean;
   error: string | null;
   showMap: boolean;
+}
+
+// ── Favourites ──
+export interface FavouriteRoute {
+  from: string;
+  to: string;
+  savedAt: number;
+}
+
+// ── Ferry ──
+export interface FerryGhat {
+  id: string;
+  name: string;
+  lat: number;
+  lng: number;
+  bank: 'east' | 'west';
+}
+
+export interface FerryRoute {
+  id: string;
+  name: string;
+  from: FerryGhat;
+  to: FerryGhat;
+  duration: string;
+  fare: string;
+  frequency: string;
+  operator: string;
+  timings: string;
+  color: string;
 }

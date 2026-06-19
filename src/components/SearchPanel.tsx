@@ -1,6 +1,8 @@
 import { useRef, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore } from '@/store/useAppStore';
+import { useFavourites } from '@/hooks/useFavourites';
+import { useNearbyStops } from '@/hooks/useNearbyStops';
 import {
   MapPin,
   ArrowUpDown,
@@ -8,6 +10,11 @@ import {
   Search,
   Check,
   AlertCircle,
+  LocateFixed,
+  Star,
+  Loader2,
+  Clock,
+  Trash2,
 } from 'lucide-react';
 
 export default function SearchPanel() {
@@ -30,6 +37,10 @@ export default function SearchPanel() {
   const searchRoutes = useAppStore((s) => s.searchRoutes);
   const searchBus = useAppStore((s) => s.searchBus);
   const clearError = useAppStore((s) => s.clearError);
+
+  const { favourites, removeFavourite } = useFavourites();
+  const { state: nearbyState, nearby, errorMsg: nearbyError, findNearby, reset: resetNearby } = useNearbyStops();
+  const [showNearby, setShowNearby] = useState(false);
 
   const [isSwapping, setIsSwapping] = useState(false);
   const [shakeError, setShakeError] = useState(false);
@@ -101,6 +112,26 @@ export default function SearchPanel() {
   const isValidFrom = search.fromStop.length > 0;
   const isValidTo = search.toStop.length > 0;
   const isValidBus = search.busNumber.length > 0;
+  const hasNoSearch = !search.fromStop && !search.toStop;
+
+  const handleNearMe = () => {
+    setShowNearby(true);
+    findNearby();
+  };
+
+  const handlePickNearby = (stopName: string) => {
+    setFromStop(stopName);
+    setShowNearby(false);
+    resetNearby();
+    toInputRef.current?.focus();
+  };
+
+  const handleUseFavourite = (from: string, to: string) => {
+    clearError();
+    setFromStop(from);
+    setToStop(to);
+    setTimeout(() => searchRoutes(), 50);
+  };
 
   return (
     <motion.div
@@ -295,16 +326,29 @@ export default function SearchPanel() {
               </AnimatePresence>
             </div>
 
-            {/* Search Button */}
-            <div className="w-full lg:w-40 shrink-0">
+            {/* Near Me + Search Buttons */}
+            <div className="flex gap-2 w-full lg:w-auto shrink-0">
+              <motion.button
+                onClick={handleNearMe}
+                whileTap={{ scale: 0.97 }}
+                title="Use my location"
+                className="h-12 w-12 shrink-0 bg-[#F3F4F6] dark:bg-[#2E2E3E] rounded-xl flex items-center justify-center text-[#6B7280] dark:text-[#A1A1AA] hover:bg-[#E5E7EB] dark:hover:bg-[#3E3E4E] transition-colors border border-[#E5E7EB] dark:border-[#3E3E4E]"
+                aria-label="Find nearby stops"
+              >
+                {nearbyState === 'loading' ? (
+                  <Loader2 size={18} className="animate-spin text-[#FF6B35]" />
+                ) : (
+                  <LocateFixed size={18} />
+                )}
+              </motion.button>
               <motion.button
                 onClick={handleSearchJourney}
                 whileTap={{ scale: 0.98 }}
-                className="w-full h-12 bg-[#FF6B35] text-white rounded-xl font-semibold text-[15px] shadow-md shadow-[#FF6B35]/25 hover:bg-[#E55A2B] active:bg-[#D44F24] transition-colors ripple flex items-center justify-center gap-2"
+                className="flex-1 lg:w-32 h-12 bg-[#FF6B35] text-white rounded-xl font-semibold text-[15px] shadow-md shadow-[#FF6B35]/25 hover:bg-[#E55A2B] active:bg-[#D44F24] transition-colors ripple flex items-center justify-center gap-2"
                 aria-label="Show available buses"
               >
                 <Search size={18} />
-                Find routes
+                Find
               </motion.button>
             </div>
           </motion.div>
@@ -417,6 +461,92 @@ export default function SearchPanel() {
             <span className="text-[13px] text-[#EF4444] dark:text-[#FCA5A5]">
               {error}
             </span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Nearby Stops Panel ── */}
+      <AnimatePresence>
+        {showNearby && (
+          <motion.div
+            initial={{ opacity: 0, height: 0, marginTop: 0 }}
+            animate={{ opacity: 1, height: 'auto', marginTop: 12 }}
+            exit={{ opacity: 0, height: 0, marginTop: 0 }}
+            transition={{ duration: 0.22 }}
+            className="overflow-hidden"
+          >
+            <div className="border-t border-[#E5E7EB] dark:border-[#2E2E3E] pt-3">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-[12px] font-semibold text-[#1C1C28] dark:text-[#F1F1F4] flex items-center gap-1">
+                  <LocateFixed size={13} className="text-[#FF6B35]" /> Nearby Stops
+                </p>
+                <button onClick={() => { setShowNearby(false); resetNearby(); }} className="text-[11px] text-[#9CA3AF] hover:text-[#6B7280]">
+                  Close
+                </button>
+              </div>
+              {nearbyState === 'loading' && (
+                <p className="text-[12px] text-[#9CA3AF] flex items-center gap-1"><Loader2 size={12} className="animate-spin" /> Getting your location…</p>
+              )}
+              {nearbyState === 'error' && (
+                <p className="text-[12px] text-[#EF4444] flex items-center gap-1"><AlertCircle size={12} /> {nearbyError}</p>
+              )}
+              {nearbyState === 'found' && (
+                <div className="flex flex-wrap gap-2">
+                  {nearby.map((s) => (
+                    <button
+                      key={s.name}
+                      onClick={() => handlePickNearby(s.name)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-[#FFF4EF] dark:bg-[#2E1A10] border border-[#FF6B35]/30 rounded-lg text-[12px] text-[#FF6B35] font-medium hover:bg-[#FF6B35] hover:text-white transition-colors"
+                    >
+                      <MapPin size={11} />
+                      {s.name}
+                      <span className="text-[10px] opacity-70">{s.distanceM}m</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Favourites Quick-Access ── */}
+      <AnimatePresence>
+        {activeTab === 'journey' && hasNoSearch && favourites.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, height: 0, marginTop: 0 }}
+            animate={{ opacity: 1, height: 'auto', marginTop: 12 }}
+            exit={{ opacity: 0, height: 0, marginTop: 0 }}
+            transition={{ duration: 0.22 }}
+            className="overflow-hidden"
+          >
+            <div className="border-t border-[#E5E7EB] dark:border-[#2E2E3E] pt-3">
+              <p className="text-[12px] font-semibold text-[#1C1C28] dark:text-[#F1F1F4] flex items-center gap-1 mb-2">
+                <Star size={13} className="text-[#F59E0B]" fill="currentColor" /> Saved Routes
+              </p>
+              <div className="space-y-1.5">
+                {favourites.slice(0, 5).map((fav) => (
+                  <div key={`${fav.from}-${fav.to}`} className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleUseFavourite(fav.from, fav.to)}
+                      className="flex-1 flex items-center gap-2 px-3 py-2 bg-[#F8FAFC] dark:bg-[#242434] rounded-lg text-left hover:bg-[#F3F4F6] dark:hover:bg-[#2E2E3E] transition-colors"
+                    >
+                      <Clock size={12} className="text-[#9CA3AF] shrink-0" />
+                      <span className="text-[12px] text-[#1C1C28] dark:text-[#F1F1F4] truncate">
+                        {fav.from} → {fav.to}
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => removeFavourite(fav.from, fav.to)}
+                      className="p-1.5 text-[#9CA3AF] hover:text-[#EF4444] transition-colors"
+                      title="Remove favourite"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
