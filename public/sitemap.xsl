@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsl:stylesheet version="2.0"
+  xmlns:html="http://www.w3.org/1999/xhtml"
+  xmlns:sitemap="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+
+  <xsl:output method="html" version="1.0" encoding="UTF-8" indent="yes"/>
+
+  <xsl:template match="/">
+    <html xmlns="http://www.w3.org/1999/xhtml">
+      <head>
+        <title>XML Sitemap — Kolkata Travel Router</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <style>
+          * { box-sizing: border-box; margin: 0; padding: 0; }
+          body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8fafc;
+            color: #1e293b;
+            padding: 2rem 1rem;
+          }
+          .container { max-width: 900px; margin: 0 auto; }
+          header {
+            background: linear-gradient(135deg, #1e40af, #3b82f6);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+          }
+          header h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.25rem; }
+          header p { font-size: 0.875rem; opacity: 0.85; }
+          .info-bar {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.85rem;
+            color: #64748b;
+          }
+          .info-bar strong { color: #1e293b; }
+          table {
+            width: 100%;
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            border-collapse: collapse;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+          }
+          thead tr { background: #f1f5f9; }
+          th {
+            text-align: left;
+            padding: 0.875rem 1.25rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #64748b;
+            border-bottom: 1px solid #e2e8f0;
+          }
+          td {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 0.875rem;
+            vertical-align: middle;
+          }
+          tr:last-child td { border-bottom: none; }
+          tr:hover td { background: #f8fafc; }
+          a {
+            color: #2563eb;
+            text-decoration: none;
+            word-break: break-all;
+          }
+          a:hover { text-decoration: underline; }
+          .badge {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: capitalize;
+          }
+          .badge-weekly { background: #dbeafe; color: #1d4ed8; }
+          .badge-monthly { background: #dcfce7; color: #166534; }
+          .badge-daily { background: #fef9c3; color: #854d0e; }
+          .priority { font-weight: 600; color: #0f172a; }
+          footer {
+            text-align: center;
+            margin-top: 1.5rem;
+            font-size: 0.78rem;
+            color: #94a3b8;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <header>
+            <h1>🗺️ XML Sitemap</h1>
+            <p>Kolkata Travel Router — kolkata-bus.vercel.app</p>
+          </header>
+
+          <div class="info-bar">
+            This sitemap contains <strong><xsl:value-of select="count(sitemap:urlset/sitemap:url)"/></strong> URL(s).
+            It is read by search engines like Google to discover and index pages.
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>URL</th>
+                <th>Last Modified</th>
+                <th>Change Frequency</th>
+                <th>Priority</th>
+              </tr>
+            </thead>
+            <tbody>
+              <xsl:for-each select="sitemap:urlset/sitemap:url">
+                <tr>
+                  <td>
+                    <a href="{sitemap:loc}"><xsl:value-of select="sitemap:loc"/></a>
+                  </td>
+                  <td><xsl:value-of select="sitemap:lastmod"/></td>
+                  <td>
+                    <span>
+                      <xsl:attribute name="class">
+                        badge badge-<xsl:value-of select="sitemap:changefreq"/>
+                      </xsl:attribute>
+                      <xsl:value-of select="sitemap:changefreq"/>
+                    </span>
+                  </td>
+                  <td>
+                    <span class="priority"><xsl:value-of select="sitemap:priority"/></span>
+                  </td>
+                </tr>
+              </xsl:for-each>
+            </tbody>
+          </table>
+
+          <footer>
+            Generated by Kolkata Travel Router · <a href="https://kolkata-bus.vercel.app/">kolkata-bus.vercel.app</a>
+          </footer>
+        </div>
+      </body>
+    </html>
+  </xsl:template>
+</xsl:stylesheet>

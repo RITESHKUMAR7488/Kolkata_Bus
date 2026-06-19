@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/sitemap.xsl"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:xhtml="http://www.w3.org/1999/xhtml"
-        xmlns:mobile="http://www.google.com/schemas/sitemap-mobile/1.0"
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
 
   <!-- Main Homepage -->
@@ -10,8 +9,6 @@
     <lastmod>2026-06-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
-    <xhtml:link rel="alternate" hreflang="en-IN" href="https://kolkata-bus.vercel.app/" />
-    <mobile:mobile />
     <image:image>
       <image:loc>https://kolkata-bus.vercel.app/og-image.png</image:loc>
       <image:title>Kolkata Travel Router - Interactive Bus, Metro and Train Map</image:title>
