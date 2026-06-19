@@ -27,11 +27,5 @@
         }
       ]
     }
-  ],
-  "rewrites": [
-    {
-      "source": "/((?!sitemap\\.xml|sitemap-images\\.xml|robots\\.txt|favicon\\.svg|og-image\\.png|site\\.webmanifest|assets/.*).*)",
-      "destination": "/index.html"
-    }
   ]
 }
