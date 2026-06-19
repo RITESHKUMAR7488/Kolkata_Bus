@@ -1,5 +1,5 @@
 import { useAppStore } from '@/store/useAppStore';
-import { Bus, Ship, Train, MapPin, Star, Share2, LocateFixed, Moon, Sun } from 'lucide-react';
+import { Bus, Ship, Train, MapPin, Star, Share2, LocateFixed, Moon, Sun, Smartphone, Gift } from 'lucide-react';
 
 export default function Footer() {
   const theme = useAppStore((s) => s.theme);
@@ -81,9 +81,9 @@ export default function Footer() {
                 { icon: <Star size={13} />, label: 'Favourite Routes' },
                 { icon: <Share2 size={13} />, label: 'Share Route Links' },
                 { icon: <MapPin size={13} />, label: 'Interactive Leaflet Map' },
-                { icon: <span className="text-[11px]">🌙</span>, label: 'Dark Mode Support' },
-                { icon: <span className="text-[11px]">📱</span>, label: 'Mobile Friendly' },
-                { icon: <span className="text-[11px]">🆓</span>, label: 'Completely Free' },
+                { icon: <Moon size={13} />, label: 'Dark Mode Support' },
+                { icon: <Smartphone size={13} />, label: 'Mobile Friendly' },
+                { icon: <Gift size={13} />, label: 'Completely Free' },
               ].map(({ icon, label }) => (
                 <li key={label} className="flex items-center gap-2 text-[13px] text-[#6B7280] dark:text-[#A1A1AA]">
                   <span className="text-[#9CA3AF]">{icon}</span>
