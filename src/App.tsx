@@ -10,6 +10,7 @@ import MetroDiagram from '@/components/MetroDiagram';
 import TrainDiagram from '@/components/TrainDiagram';
 import FerryDiagram from '@/components/FerryDiagram';
 import SEOContent from '@/components/SEOContent';
+import Footer from '@/components/Footer';
 import './App.css';
 
 function App() {
@@ -153,6 +154,8 @@ function App() {
 
         <SEOContent />
       </main>
+
+      <Footer />
     </div>
   );
 }
