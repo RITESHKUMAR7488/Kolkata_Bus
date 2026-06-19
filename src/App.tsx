@@ -8,6 +8,7 @@ import MapView from '@/components/MapView';
 import MapLegend from '@/components/MapLegend';
 import MetroDiagram from '@/components/MetroDiagram';
 import TrainDiagram from '@/components/TrainDiagram';
+import SEOContent from '@/components/SEOContent';
 import './App.css';
 
 function App() {
@@ -128,6 +129,7 @@ function App() {
             </div>
           </>
         )}
+        <SEOContent />
       </main>
     </div>
   );
