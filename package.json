@@ -5,8 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && node scripts/generate-seo.mjs",
     "lint": "eslint .",
+    "test": "node scripts/verify-features.mjs && node scripts/verify-seo.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

@@ -196,8 +196,8 @@ export const trainLines = ${JSON.stringify(lines.map(l => ({ id: l.id, name: l.n
       if (loc) {
         busData.stops[s] = loc;
       } else {
-        // Fallback dummy around kolkata
-        busData.stops[s] = { lat: 22.5726 + (Math.random()*0.1), lng: 88.3639 + (Math.random()*0.1) };
+        // Keep missing coordinates explicit; never fabricate locations.
+        busData.stops[s] = { lat: null, lng: null };
       }
       await delay(1000); // 1 sec delay to respect nominatim
     } else {

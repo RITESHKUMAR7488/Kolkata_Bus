@@ -1,4 +1,5 @@
-import { useMemo, useEffect } from 'react';
+import { useMemo, useEffect, useState } from 'react';
+import RoadPolyline from './RoadPolyline';
 import { MapContainer, TileLayer, Polyline, Marker, Popup, Tooltip, useMap } from 'react-leaflet';
 import { useAppStore } from '@/store/useAppStore';
 import { getBusFullRoute } from '@/lib/routingEngine';
@@ -58,10 +59,13 @@ const metroInterchangeIcon = L.divIcon({
 // Auto-center map on route
 function MapAutoCenter({ bounds }: { bounds: L.LatLngBoundsExpression }) {
   const map = useMap();
-  useMemo(() => {
+  useEffect(() => {
     if (bounds) {
       map.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
     }
+    const observer = new ResizeObserver(() => { map.invalidateSize(); if (bounds) map.fitBounds(bounds, { padding: [25, 25], maxZoom: 15 }); });
+    observer.observe(map.getContainer());
+    return () => observer.disconnect();
   }, [map, bounds]);
   return null;
 }
@@ -74,6 +78,7 @@ function MapGestures() {
     const container = map.getContainer();
     
     const handleWheel = (e: WheelEvent) => {
+      if (!e.ctrlKey && !e.shiftKey) return;
       e.preventDefault();
       
       let dx = e.deltaX;
@@ -106,17 +111,25 @@ function MapGestures() {
 }
 
 // Map Controls component to handle map instance inside
-function MapControls({ wrapperRef }: { wrapperRef: React.RefObject<HTMLDivElement | null> }) {
+function MapControls({ wrapperRef, bounds }: { wrapperRef: React.RefObject<HTMLDivElement | null>; bounds: L.LatLngBounds | null }) {
   const map = useMap();
+  const [locationMessage, setLocationMessage] = useState('');
+  const locate = () => {
+    if (!navigator.geolocation) { setLocationMessage('Location is unavailable.'); return; }
+    setLocationMessage('Finding your location…');
+    navigator.geolocation.getCurrentPosition(pos => { map.setView([pos.coords.latitude, pos.coords.longitude], 15); setLocationMessage('Map centered on your location.'); }, error => { setLocationMessage(error.code === 1 ? 'Location access denied. Search a stop instead.' : 'Could not find your location. Try again.'); }, { timeout: 10000, maximumAge: 60000 });
+  };
 
-  const handleFullscreen = () => {
+  const handleFullscreen = async () => {
+    try {
     if (wrapperRef.current) {
       if (document.fullscreenElement) {
-        document.exitFullscreen();
+        await document.exitFullscreen();
       } else {
-        wrapperRef.current.requestFullscreen();
+        await wrapperRef.current.requestFullscreen();
       }
     }
+    } catch { setLocationMessage('Fullscreen is unavailable in this browser.'); }
   };
 
   return (
@@ -125,7 +138,7 @@ function MapControls({ wrapperRef }: { wrapperRef: React.RefObject<HTMLDivElemen
         <button onClick={() => map.zoomIn()} className="p-2.5 text-[#4B5563] dark:text-[#A1A1AA] hover:text-[#FF6B35] transition-colors rounded-lg hover:bg-[#F3F4F6] dark:hover:bg-[#2E2E3E]" title="Zoom In">
           <ZoomIn size={20} />
         </button>
-        <button onClick={() => map.setZoom(13)} className="p-2.5 text-[#4B5563] dark:text-[#A1A1AA] hover:text-[#FF6B35] transition-colors rounded-lg hover:bg-[#F3F4F6] dark:hover:bg-[#2E2E3E]" title="Reset Zoom">
+        <button onClick={() => bounds ? map.fitBounds(bounds, { padding: [25, 25], maxZoom: 15 }) : map.setView([22.5726, 88.3639], 13)} className="p-2.5 text-[#4B5563] dark:text-[#A1A1AA] hover:text-[#FF6B35] transition-colors rounded-lg hover:bg-[#F3F4F6] dark:hover:bg-[#2E2E3E]" title="Fit map to routes">
           <span className="text-xs font-bold">1:1</span>
         </button>
         <button onClick={() => map.zoomOut()} className="p-2.5 text-[#4B5563] dark:text-[#A1A1AA] hover:text-[#FF6B35] transition-colors rounded-lg hover:bg-[#F3F4F6] dark:hover:bg-[#2E2E3E]" title="Zoom Out">
@@ -138,15 +151,14 @@ function MapControls({ wrapperRef }: { wrapperRef: React.RefObject<HTMLDivElemen
       </div>
       <div className="absolute bottom-4 right-4 z-[400]">
         <button
-          onClick={() => {
-            // Recenter could go here
-          }}
+          onClick={locate}
           className="w-10 h-10 rounded-full bg-white/90 backdrop-blur flex items-center justify-center text-[#1C1C28] shadow-md hover:bg-white transition-colors"
           title="My Location"
         >
           <Navigation size={18} />
         </button>
       </div>
+      {locationMessage && <p role="status" className="absolute bottom-12 right-4 z-[400] bg-white text-slate-800 p-2 rounded-lg text-xs max-w-[240px]">{locationMessage}</p>}
     </>
   );
 }
@@ -156,11 +168,17 @@ export default function MapView() {
   const selectedRoute = useAppStore((s) => s.selectedRoute);
   const selectedBus = useAppStore((s) => s.selectedBus);
   const results = useAppStore((s) => s.results);
-  const theme = useAppStore((s) => s.theme);
   const activeTab = useAppStore((s) => s.activeTab);
   const metroView = useAppStore((s) => s.metroView);
   const trainView = useAppStore((s) => s.trainView);
   const selectedTrainLine = useAppStore((s) => s.selectedTrainLine);
+  const displayedRoute = selectedRoute ?? results?.[0];
+  const isRoadLine = (id: string) => {
+    if (selectedBus) return !['metro', 'train', 'ferry'].includes(selectedBus.type);
+    if (!displayedRoute) return true;
+    const type = displayedRoute.type === 'direct' ? displayedRoute.busType : displayedRoute.hops[Number(id.replace('hop-', ''))]?.busType;
+    return !['metro', 'train', 'ferry'].includes(type ?? '');
+  };
 
   // Determine what to show on the map
   const mapData = useMemo(() => {
@@ -316,25 +334,21 @@ export default function MapView() {
         zoom={13}
         className="w-full h-full"
         zoomControl={false}
-        attributionControl={false}
+        attributionControl={true}
         scrollWheelZoom={false} // Disabled default to use custom Trackpad Gestures
       >
         <MapGestures />
-        <MapControls wrapperRef={wrapperRef} />
+        <MapControls wrapperRef={wrapperRef} bounds={mapData.bounds} />
         <TileLayer
-          url={
-            theme === 'dark'
-              ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-              : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
-          }
-          attribution='&copy; <a href="https://carto.com/">CARTO</a>'
+          url={import.meta.env.VITE_MAP_TILE_URL || 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'}
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>'
         />
 
         {/* Auto center */}
         {mapData.bounds && <MapAutoCenter bounds={mapData.bounds} />}
 
         {/* Route Lines */}
-        {mapData.lines.map(line => line.positions.length > 1 && (
+        {mapData.lines.map(line => line.positions.length > 1 && (mapData.isMetroNetwork ? (
           <Polyline
             key={line.id}
             positions={line.positions}
@@ -344,10 +358,11 @@ export default function MapView() {
               opacity: mapData.isMetroNetwork ? 1 : 0.9,
               lineCap: 'round',
               lineJoin: 'round',
+              dashArray: activeTab === 'metro' ? '8 5' : undefined,
             }}
             className={mapData.isMetroNetwork ? '' : 'route-line-animated'}
           />
-        ))}
+        ) : <RoadPolyline key={line.id} positions={line.positions} color={line.color} road={isRoadLine(line.id)} />))}
 
         {/* Markers */}
         {mapData.markers.map((marker, i) => {
@@ -370,7 +385,6 @@ export default function MapView() {
                   direction="right" 
                   offset={[10, 0]} 
                   opacity={1} 
-                  permanent 
                   className="bg-transparent border-0 shadow-none text-[11px] md:text-[12px] font-bold text-[#111118] dark:text-white"
                 >
                   <span style={{ textShadow: '0 1px 3px rgba(255,255,255,0.8), 0 0 2px rgba(255,255,255,0.8)' }} className="dark:!text-shadow-none dark:drop-shadow-md">
@@ -388,6 +402,9 @@ export default function MapView() {
           );
         })}
       </MapContainer>
+      {mapData.isMetroNetwork && <p className="absolute bottom-7 left-3 z-[400] bg-white/95 text-slate-800 rounded-lg px-3 py-2 text-xs max-w-[70%]">Indicative dataset network · Station locations and paths may be approximate · Verify operating service</p>}
+      {!mapData.isMetroNetwork && mapData.lines.length > 0 && <p className="absolute bottom-7 left-3 z-[400] bg-white/95 text-slate-800 rounded-lg px-3 py-2 text-xs max-w-[70%]">Calculated road paths · Dashed lines connect known stops · Actual service path may differ</p>}
+      {!mapData.isMetroNetwork && (selectedBus || displayedRoute) && mapData.markers.length === 0 && <p role="status" className="absolute top-4 left-4 z-[400] bg-white text-slate-800 p-3 rounded-lg text-xs max-w-[65%]">No map coordinates are available for this route. See its stop list instead.</p>}
     </div>
   );
 }
@@ -436,7 +453,7 @@ function getRouteMapData(route: RouteResult) {
 
   return {
     isMetroNetwork: false,
-    lines: [{ id: 'route', color: '#FF6B35', positions }],
+    lines: route.type === 'direct' ? [{ id: 'route', color: '#FF6B35', positions }] : route.hops.map((hop, index) => ({ id: `hop-${index}`, color: ['#FF6B35', '#008080', '#8b5cf6'][index], positions: hop.route.filter(stop => stop.lat !== null && stop.lng !== null).map(stop => [stop.lat!, stop.lng!] as L.LatLngTuple) })),
     markers,
     center: positions.length > 0 ? positions[Math.floor(positions.length / 2)] : ([22.5726, 88.3639] as L.LatLngTuple),
     bounds: positions.length > 0 ? L.latLngBounds(positions) : null,

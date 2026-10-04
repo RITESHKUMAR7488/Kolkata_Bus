@@ -6,6 +6,7 @@ import {
   searchBuses,
   getBusByNumber,
   isValidStop,
+  normalizeStop,
 } from '@/lib/routingEngine';
 
 interface AppActions {
@@ -68,6 +69,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
 
   setTheme: (theme) => {
     set({ theme });
+    try { localStorage.setItem('ktr_theme', theme); } catch { /* Keep in-memory preference. */ }
     if (theme === 'dark') {
       document.documentElement.classList.add('dark');
     } else {
@@ -78,7 +80,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
   toggleTheme: () => {
     const current = get().theme;
     const next = current === 'light' ? 'dark' : 'light';
-    set({ theme: next });
+    get().setTheme(next);
     if (next === 'dark') {
       document.documentElement.classList.add('dark');
     } else {
@@ -198,8 +200,8 @@ export const useAppStore = create<AppStore>((set, get) => ({
 
   searchRoutes: () => {
     const { search } = get();
-    const from = search.fromStop.trim();
-    const to = search.toStop.trim();
+    const from = normalizeStop(search.fromStop);
+    const to = normalizeStop(search.toStop);
 
     if (!from || !to) {
       set({ error: 'Please enter both starting point and destination' });
@@ -218,9 +220,10 @@ export const useAppStore = create<AppStore>((set, get) => ({
       return;
     }
 
-    set({ loading: true, error: null, results: null, selectedRoute: null });
+    set({ loading: true, error: null, results: null, selectedRoute: null, search: { ...search, fromStop: from, toStop: to, showFromDropdown: false, showToDropdown: false } });
 
     setTimeout(() => {
+      if (get().activeTab !== 'journey' || get().search.fromStop !== from || get().search.toStop !== to) { set({ loading: false }); return; }
       const results = findAllRoutes(from, to);
       set({ loading: false, results });
     }, 400);
@@ -238,6 +241,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
     set({ loading: true, error: null, selectedBus: null, results: null });
 
     setTimeout(() => {
+      if (get().activeTab !== 'bus' || get().search.busNumber.trim() !== num) { set({ loading: false }); return; }
       const bus = getBusByNumber(num);
       if (bus) {
         set({ loading: false, selectedBus: bus });

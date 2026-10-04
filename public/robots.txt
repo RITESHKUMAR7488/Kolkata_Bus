@@ -1,21 +1,4 @@
-# Kolkata Travel Router - robots.txt
-# https://kolkata-bus.vercel.app/
-
 User-agent: *
 Allow: /
 
-# Block any build artifacts or private paths
-Disallow: /dist/
-Disallow: /node_modules/
-Disallow: /scratch/
-Disallow: /*.json$
-
-# Crawl-delay for non-Google bots
-User-agent: Bingbot
-Crawl-delay: 10
-
-User-agent: Slurp
-Crawl-delay: 10
-
-# Sitemaps
 Sitemap: https://kolkata-bus.vercel.app/sitemap.xml

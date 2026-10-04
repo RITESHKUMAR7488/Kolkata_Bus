@@ -1,4 +1,6 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
+import { findNearbyStops } from '@/lib/nearbyStops';
+import { getAllStops } from '@/lib/routingEngine';
 import busData from '@/data/busdata.json';
 
 export type NearbyState = 'idle' | 'loading' | 'found' | 'error';
@@ -8,23 +10,14 @@ export interface NearbyStop {
   distanceM: number;
 }
 
-function haversineM(lat1: number, lng1: number, lat2: number, lng2: number): number {
-  const R = 6_371_000; // Earth radius in metres
-  const toRad = (deg: number) => (deg * Math.PI) / 180;
-  const dLat = toRad(lat2 - lat1);
-  const dLng = toRad(lng2 - lng1);
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
-
 export function useNearbyStops() {
+  const request = useRef(0);
   const [state, setState] = useState<NearbyState>('idle');
   const [nearby, setNearby] = useState<NearbyStop[]>([]);
   const [errorMsg, setErrorMsg] = useState<string>('');
 
   const findNearby = useCallback(() => {
+    const current = ++request.current;
     if (!navigator.geolocation) {
       setErrorMsg('Geolocation not supported by your browser.');
       setState('error');
@@ -35,21 +28,11 @@ export function useNearbyStops() {
 
     navigator.geolocation.getCurrentPosition(
       (pos) => {
+        if (current !== request.current) return;
         const { latitude, longitude } = pos.coords;
         const stops = (busData as { stops: Record<string, { lat: number | null; lng: number | null }> }).stops;
 
-        const withDistance: NearbyStop[] = [];
-        for (const [name, loc] of Object.entries(stops)) {
-          if (loc.lat != null && loc.lng != null) {
-            const d = haversineM(latitude, longitude, loc.lat, loc.lng);
-            if (d <= 2000) { // within 2 km
-              withDistance.push({ name, distanceM: Math.round(d) });
-            }
-          }
-        }
-
-        withDistance.sort((a, b) => a.distanceM - b.distanceM);
-        const top = withDistance.slice(0, 6);
+        const top = findNearbyStops(latitude, longitude, stops, new Set(getAllStops()));
 
         if (top.length === 0) {
           setErrorMsg('No stops found within 2 km. Try typing manually.');
@@ -60,8 +43,9 @@ export function useNearbyStops() {
         }
       },
       (err) => {
+        if (current !== request.current) return;
         if (err.code === err.PERMISSION_DENIED) {
-          setErrorMsg('Location access denied. Please allow it in browser settings.');
+          setErrorMsg('Location access denied. Type a stop instead, or change your browser permission.');
         } else {
           setErrorMsg('Could not get your location. Please try again.');
         }
@@ -72,6 +56,7 @@ export function useNearbyStops() {
   }, []);
 
   const reset = useCallback(() => {
+    request.current++;
     setState('idle');
     setNearby([]);
     setErrorMsg('');

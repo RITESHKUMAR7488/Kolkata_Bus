@@ -5,11 +5,12 @@ import type { FerryRoute } from '@/types';
 import { Clock, Banknote, Ship, Anchor, Navigation, ChevronDown } from 'lucide-react';
 
 export default function FerryDiagram() {
-  const [view, setView] = useState<'routes' | 'map'>('routes');
+  const [view, setView] = useState<'routes' | 'map'>('map');
   const [selected, setSelected] = useState<FerryRoute | null>(null);
 
   return (
     <div className="flex flex-col gap-4 mt-6">
+      <p className="text-xs text-slate-500 dark:text-slate-400">Ferry connections across the Hooghly. Fares and timings are dataset estimates, not live service information; confirm at the ghat.</p>
       {/* View Toggle */}
       <div className="flex justify-center">
         <div className="bg-[#E5E7EB] dark:bg-[#2E2E3E] p-1 rounded-lg flex items-center">
@@ -228,14 +229,25 @@ function FerryMapView({
 }) {
   const mapRef = useRef<HTMLDivElement>(null);
   const leafletMapRef = useRef<import('leaflet').Map | null>(null);
+  const routeLayers = useRef(new Map<string, import('leaflet').Polyline>());
+  const selectedRef = useRef(selected);
+  useEffect(() => {
+    selectedRef.current = selected;
+    for (const [id, line] of routeLayers.current) line.setStyle({ weight: selected?.id === id ? 6 : 3, opacity: !selected || selected.id === id ? 1 : .25 });
+    const line = selected && routeLayers.current.get(selected.id);
+    if (line) leafletMapRef.current?.fitBounds(line.getBounds(), { padding: [40, 40], maxZoom: 14 });
+  }, [selected]);
 
   useEffect(() => {
     let map: import('leaflet').Map;
+    const layers = routeLayers.current;
+    let cancelled = false;
+    let observer: ResizeObserver | undefined;
 
     async function init() {
       const L = await import('leaflet');
 
-      if (!mapRef.current || leafletMapRef.current) return;
+      if (cancelled || !mapRef.current || leafletMapRef.current) return;
 
       map = L.map(mapRef.current, {
         center: [22.5726, 88.36],
@@ -245,9 +257,8 @@ function FerryMapView({
 
       leafletMapRef.current = map;
 
-      // Dark tile layer
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        attribution: '© OpenStreetMap contributors © CARTO',
+      L.tileLayer(import.meta.env.VITE_MAP_TILE_URL || 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>',
         maxZoom: 18,
       }).addTo(map);
 
@@ -266,7 +277,8 @@ function FerryMapView({
           }
         ).addTo(map);
 
-        line.on('click', () => setSelected(selected?.id === route.id ? null : route));
+        routeLayers.current.set(route.id, line);
+        line.on('click', () => setSelected(selectedRef.current?.id === route.id ? null : route));
         line.bindTooltip(route.name, { sticky: true, className: 'leaflet-ferry-tooltip' });
       });
 
@@ -305,11 +317,17 @@ function FerryMapView({
         },
       });
       new LegendControl({ position: 'bottomright' }).addTo(map);
+      map.fitBounds(L.latLngBounds(ghats.map(g => [g.lat, g.lng])), { padding: [35, 35] });
+      observer = new ResizeObserver(() => { map.invalidateSize(); if (!selectedRef.current) map.fitBounds(L.latLngBounds(ghats.map(g => [g.lat, g.lng])), { padding: [35, 35] }); });
+      observer.observe(mapRef.current);
     }
 
     init();
 
     return () => {
+      cancelled = true;
+      observer?.disconnect();
+      layers.clear();
       if (leafletMapRef.current) {
         leafletMapRef.current.remove();
         leafletMapRef.current = null;
@@ -319,7 +337,7 @@ function FerryMapView({
   }, []);
 
   return (
-    <div className="flex flex-col lg:flex-row gap-4 items-start">
+    <div className="flex flex-col-reverse lg:flex-row gap-4 items-start">
       {/* Sidebar */}
       <div className="w-full lg:w-64 shrink-0 space-y-2 max-h-[500px] overflow-y-auto pr-1">
         <p className="text-[11px] text-[#9CA3AF] uppercase tracking-wider font-medium px-1 mb-2">

@@ -40,16 +40,17 @@ export default function ResultsDashboard() {
   const search = useAppStore((s) => s.search);
 
   const { isFavourite, toggleFavourite } = useFavourites();
-  const [shareStatus, setShareStatus] = useState<'idle' | 'shared' | 'copied'>('idle');
+  const [shareStatus, setShareStatus] = useState<'idle' | 'shared' | 'copied' | 'error'>('idle');
+  const [visibleCount, setVisibleCount] = useState(20);
 
-  const from = search.fromStop;
-  const to = search.toStop;
+  const first = results?.[0];
+  const from = first ? (first.type === 'direct' ? first.origin : first.hops[0].from) : search.fromStop;
+  const to = first ? (first.type === 'direct' ? first.destination : first.hops[first.hops.length - 1].to) : search.toStop;
   const starred = isFavourite(from, to);
 
   const handleShare = useCallback(async () => {
     if (!from || !to) return;
-    const status = await shareRoute(from, to);
-    setShareStatus(status);
+    try { setShareStatus(await shareRoute(from, to)); } catch { setShareStatus('error'); }
     setTimeout(() => setShareStatus('idle'), 2500);
   }, [from, to]);
 
@@ -155,17 +156,20 @@ export default function ResultsDashboard() {
             >
               <Check size={13} className="text-[#3B82F6]" />
               <span className="text-[12px] text-[#1D4ED8] dark:text-[#93C5FD]">
-                {shareStatus === 'copied' ? 'Link copied to clipboard!' : 'Route shared!'}
+                {shareStatus === 'error' ? 'Sharing unavailable. Use the copyable route link below.' : shareStatus === 'copied' ? 'Link copied to clipboard!' : 'Route shared!'}
               </span>
             </motion.div>
           )}
         </AnimatePresence>
 
+        <p className="text-xs text-slate-500 dark:text-slate-400">Dataset routes, not live arrivals. Some services or stop coordinates may be incomplete.</p>
+        <details className="text-xs break-all"><summary className="cursor-pointer py-2">Copy route link</summary><a href={buildShareUrl(from, to)}>{buildShareUrl(from, to)}</a></details>
         <AnimatePresence>
-          {results.map((route, i) => (
+          {results.slice(0, visibleCount).map((route, i) => (
             <RouteCard key={`${route.type}-${i}`} route={route} index={i} />
           ))}
         </AnimatePresence>
+        {results.length > visibleCount && <button className="w-full rounded-xl border border-slate-300 dark:border-slate-600 p-3 text-sm" onClick={() => setVisibleCount(count => count + 20)}>Show more routes ({results.length - visibleCount} remaining)</button>}
       </div>
     );
   }

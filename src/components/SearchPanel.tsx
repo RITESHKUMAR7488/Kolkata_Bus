@@ -2,6 +2,7 @@ import { useRef, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore } from '@/store/useAppStore';
 import { useFavourites } from '@/hooks/useFavourites';
+import { isValidStop, getBusByNumber } from '@/lib/routingEngine';
 import { useNearbyStops } from '@/hooks/useNearbyStops';
 import {
   MapPin,
@@ -43,7 +44,7 @@ export default function SearchPanel() {
   const [showNearby, setShowNearby] = useState(false);
 
   const [isSwapping, setIsSwapping] = useState(false);
-  const [shakeError, setShakeError] = useState(false);
+  const shakeError = Boolean(error);
 
   const fromInputRef = useRef<HTMLInputElement>(null);
   const toInputRef = useRef<HTMLInputElement>(null);
@@ -82,16 +83,7 @@ export default function SearchPanel() {
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  // Shake animation trigger
-  useEffect(() => {
-    if (error) {
-      setShakeError(true);
-      const timer = setTimeout(() => setShakeError(false), 600);
-      return () => clearTimeout(timer);
-    }
-  }, [error]);
+  }, [setShowBusDropdown, setShowFromDropdown, setShowToDropdown]);
 
   const handleSwap = () => {
     setIsSwapping(true);
@@ -109,9 +101,9 @@ export default function SearchPanel() {
     searchBus();
   };
 
-  const isValidFrom = search.fromStop.length > 0;
-  const isValidTo = search.toStop.length > 0;
-  const isValidBus = search.busNumber.length > 0;
+  const isValidFrom = isValidStop(search.fromStop.trim());
+  const isValidTo = isValidStop(search.toStop.trim());
+  const isValidBus = Boolean(getBusByNumber(search.busNumber.trim()));
   const hasNoSearch = !search.fromStop && !search.toStop;
 
   const handleNearMe = () => {
@@ -171,6 +163,8 @@ export default function SearchPanel() {
                   placeholder="Search start stop"
                   className="w-full h-12 pl-11 pr-10 bg-white dark:bg-[#242434] border border-[#E5E7EB] dark:border-[#3E3E4E] rounded-xl text-[15px] text-[#1C1C28] dark:text-[#F1F1F4] placeholder:text-[#9CA3AF] focus:outline-none focus:border-[#FF6B35] focus:ring-2 focus:ring-[#FF6B35]/20 transition-all"
                   aria-label="Starting stop"
+                  role="combobox"
+                  onKeyDown={(e) => { if (e.key === "Enter") { setShowFromDropdown(false); handleSearchJourney(); } if (e.key === "Escape") setShowFromDropdown(false); if (e.key === "ArrowDown") { e.preventDefault(); document.getElementById(e.currentTarget.getAttribute("aria-controls") ?? "")?.querySelector<HTMLButtonElement>("button")?.focus(); } }}
                   aria-autocomplete="list"
                   aria-controls="from-suggestions"
                   aria-expanded={search.showFromDropdown}
@@ -202,6 +196,8 @@ export default function SearchPanel() {
                       <button
                         key={stop}
                         role="option"
+                        aria-selected={false}
+                        onKeyDown={(e) => { if (e.key === "ArrowDown") { e.preventDefault(); (e.currentTarget.nextElementSibling as HTMLElement | null)?.focus(); } if (e.key === "ArrowUp") { e.preventDefault(); (e.currentTarget.previousElementSibling as HTMLElement | null)?.focus(); } if (e.key === "Escape") { setShowFromDropdown(false); setShowToDropdown(false); setShowBusDropdown(false); } }}
                         onClick={() => {
                           selectFromSuggestion(stop);
                           toInputRef.current?.focus();
@@ -267,6 +263,8 @@ export default function SearchPanel() {
                   placeholder="Search destination stop"
                   className="w-full h-12 pl-11 pr-10 bg-white dark:bg-[#242434] border border-[#E5E7EB] dark:border-[#3E3E4E] rounded-xl text-[15px] text-[#1C1C28] dark:text-[#F1F1F4] placeholder:text-[#9CA3AF] focus:outline-none focus:border-[#FF6B35] focus:ring-2 focus:ring-[#FF6B35]/20 transition-all"
                   aria-label="Destination stop"
+                  role="combobox"
+                  onKeyDown={(e) => { if (e.key === "Enter") { setShowToDropdown(false); handleSearchJourney(); } if (e.key === "Escape") setShowToDropdown(false); if (e.key === "ArrowDown") { e.preventDefault(); document.getElementById(e.currentTarget.getAttribute("aria-controls") ?? "")?.querySelector<HTMLButtonElement>("button")?.focus(); } }}
                   aria-autocomplete="list"
                   aria-controls="to-suggestions"
                   aria-expanded={search.showToDropdown}
@@ -298,6 +296,8 @@ export default function SearchPanel() {
                       <button
                         key={stop}
                         role="option"
+                        aria-selected={false}
+                        onKeyDown={(e) => { if (e.key === "ArrowDown") { e.preventDefault(); (e.currentTarget.nextElementSibling as HTMLElement | null)?.focus(); } if (e.key === "ArrowUp") { e.preventDefault(); (e.currentTarget.previousElementSibling as HTMLElement | null)?.focus(); } if (e.key === "Escape") { setShowFromDropdown(false); setShowToDropdown(false); setShowBusDropdown(false); } }}
                         onClick={() => selectToSuggestion(stop)}
                         className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-[#F3F4F6] dark:hover:bg-[#2E2E3E] transition-colors first:rounded-t-xl last:rounded-b-xl"
                       >
@@ -343,8 +343,9 @@ export default function SearchPanel() {
               </motion.button>
               <motion.button
                 onClick={handleSearchJourney}
-                whileTap={{ scale: 0.98 }}
-                className="flex-1 lg:w-32 h-12 bg-[#FF6B35] text-white rounded-xl font-semibold text-[15px] shadow-md shadow-[#FF6B35]/25 hover:bg-[#E55A2B] active:bg-[#D44F24] transition-colors ripple flex items-center justify-center gap-2"
+                whileHover={{ scale: 1.02, boxShadow: '0 8px 25px -5px rgba(255, 107, 53, 0.4)' }}
+                whileTap={{ scale: 0.97 }}
+                className="flex-1 lg:w-32 h-12 btn-shimmer text-white rounded-xl font-semibold text-[15px] shadow-md shadow-[#FF6B35]/25 active:bg-[#D44F24] transition-shadow ripple flex items-center justify-center gap-2"
                 aria-label="Show available buses"
               >
                 <Search size={18} />
@@ -382,6 +383,8 @@ export default function SearchPanel() {
                   placeholder="Enter Bus Number (e.g., S-101, AC-47)"
                   className="w-full h-12 pl-11 pr-10 bg-white dark:bg-[#242434] border border-[#E5E7EB] dark:border-[#3E3E4E] rounded-xl text-[15px] text-[#1C1C28] dark:text-[#F1F1F4] placeholder:text-[#9CA3AF] focus:outline-none focus:border-[#FF6B35] focus:ring-2 focus:ring-[#FF6B35]/20 transition-all"
                   aria-label="Bus number"
+                  role="combobox"
+                  onKeyDown={(e) => { if (e.key === "Enter") { setShowBusDropdown(false); handleSearchBus(); } if (e.key === "Escape") setShowBusDropdown(false); if (e.key === "ArrowDown") { e.preventDefault(); document.getElementById(e.currentTarget.getAttribute("aria-controls") ?? "")?.querySelector<HTMLButtonElement>("button")?.focus(); } }}
                   aria-autocomplete="list"
                   aria-controls="bus-suggestions"
                   aria-expanded={search.showBusDropdown}
@@ -413,6 +416,8 @@ export default function SearchPanel() {
                       <button
                         key={num}
                         role="option"
+                        aria-selected={false}
+                        onKeyDown={(e) => { if (e.key === "ArrowDown") { e.preventDefault(); (e.currentTarget.nextElementSibling as HTMLElement | null)?.focus(); } if (e.key === "ArrowUp") { e.preventDefault(); (e.currentTarget.previousElementSibling as HTMLElement | null)?.focus(); } if (e.key === "Escape") { setShowFromDropdown(false); setShowToDropdown(false); setShowBusDropdown(false); } }}
                         onClick={() => selectBusSuggestion(num)}
                         className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-[#F3F4F6] dark:hover:bg-[#2E2E3E] transition-colors first:rounded-t-xl last:rounded-b-xl"
                       >
@@ -434,8 +439,9 @@ export default function SearchPanel() {
             <div className="w-full lg:w-40 shrink-0">
               <motion.button
                 onClick={handleSearchBus}
-                whileTap={{ scale: 0.98 }}
-                className="w-full h-12 bg-[#FF6B35] text-white rounded-xl font-semibold text-[15px] shadow-md shadow-[#FF6B35]/25 hover:bg-[#E55A2B] active:bg-[#D44F24] transition-colors ripple flex items-center justify-center gap-2"
+                whileHover={{ scale: 1.02, boxShadow: '0 8px 25px -5px rgba(255, 107, 53, 0.4)' }}
+                whileTap={{ scale: 0.97 }}
+                className="w-full h-12 btn-shimmer text-white rounded-xl font-semibold text-[15px] shadow-md shadow-[#FF6B35]/25 active:bg-[#D44F24] transition-shadow ripple flex items-center justify-center gap-2"
                 aria-label="Find bus route"
               >
                 <Bus size={18} />

@@ -91,7 +91,7 @@ export default function SEOContent() {
       {/* Hero */}
       <div className="text-center max-w-2xl mx-auto mb-12 px-4">
         <h2 className="text-2xl md:text-3xl font-bold text-[#1C1C28] dark:text-[#F1F1F4] mb-4 leading-tight tracking-tight">
-          Kolkata's Smartest Public Transport Planner
+          Kolkata Bus Routes, Metro, Trains & Ferries
         </h2>
         <p className="text-[#6B7280] dark:text-[#A1A1AA] text-[15px] leading-relaxed">
           A free, interactive tool to plan journeys across Kolkata using buses, the Metro,
@@ -116,8 +116,8 @@ export default function SEOContent() {
           color="text-[#008080]"
           bg="bg-[#E8F5F5] dark:bg-[#0A2020]"
           title="Kolkata Metro Map"
-          description="Explore India's first metro system. View all lines including the North-South corridor and the East-West Green Line from Howrah Maidan to Salt Lake Sector V."
-          points={['All lines & stations', 'East-West Green Line', 'Schematic & map view', 'Interchange stations']}
+          description="Explore India's first metro system. Explore the dataset lines including the North-South corridor and the East-West Green Line from Howrah Maidan to Salt Lake Sector V."
+          points={['Dataset lines & stations', 'East-West Green Line', 'Schematic & map view', 'Interchange stations']}
         />
         <ModeCard
           icon={<Train size={18} />}
@@ -132,8 +132,8 @@ export default function SEOContent() {
           color="text-[#3B82F6]"
           bg="bg-[#EFF6FF] dark:bg-[#1E3A5F]"
           title="Hooghly River Ferry"
-          description="Discover ferry routes operated by WBSTC across the Hooghly River. Cross between Howrah and Kolkata ghats quickly and cheaply from ₹6 per trip."
-          points={['10+ river ferry routes', 'Fares & timings', 'Ghat locations on map', 'Howrah ↔ Fairlie, Baghbazar']}
+          description="Discover ferry routes operated by WBSTC across the Hooghly River. Explore connections between Howrah and Kolkata ghats. Confirm fares and current service at the ghat."
+          points={['10 dataset ferry routes', 'Indicative fares & timings', 'Ghat locations on map', 'Howrah ↔ Fairlie, Baghbazar']}
         />
       </div>
 
@@ -161,7 +161,7 @@ export default function SEOContent() {
           <FeatureItem
             icon={<Map size={15} />}
             title="Interactive Map"
-            description="View routes on a live Leaflet map with all stops and junction points highlighted."
+            description="View routes on an interactive Leaflet map with all stops and junction points highlighted."
           />
           <FeatureItem
             icon={<GitBranch size={15} />}
@@ -275,7 +275,7 @@ export default function SEOContent() {
             },
             {
               q: 'How many metro lines does Kolkata have?',
-              a: 'Kolkata Metro operates Line 1 (North-South / Blue Line: Dakshineswar to Kavi Subhas), Line 2 (East-West / Green Line: Howrah Maidan to Salt Lake Sector V), and several upcoming corridors. The metro map shows all operational stations and interchange points.',
+              a: 'Our dataset map contains five colour-coded corridors, including planned sections. A station on the diagram does not confirm current operation. Check Metro Railway Kolkata notices for open sections and service changes.',
             },
             {
               q: 'Can I plan a local train journey in Kolkata?',
@@ -283,7 +283,7 @@ export default function SEOContent() {
             },
             {
               q: 'What Hooghly River ferry routes are available?',
-              a: 'The Ferry tab shows 10+ WBSTC routes including Howrah ↔ Fairlie Place, Howrah ↔ Chandpal Ghat, Chandpal ↔ Belur Math, Fairlie ↔ Dakshineswar, and more. Fares start from ₹6. All routes are shown on an interactive map with ghat markers.',
+              a: 'The Ferry tab shows 10 dataset connections with ghat markers. Fares, frequencies and timings are unverified estimates; confirm current service and ticket prices at the ghat.',
             },
             {
               q: 'How do I save and share a route?',

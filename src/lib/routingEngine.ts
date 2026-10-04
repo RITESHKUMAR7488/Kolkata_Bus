@@ -8,24 +8,36 @@ import type {
   RouteStop,
 } from '@/types';
 
-const data = busData as BusData;
+const rawData = busData as BusData;
+const seenRoutes = new Set<string>();
+const data: BusData = { ...rawData, routes: rawData.routes.filter(route => {
+  const key = `${route.busNumber}|${route.stops.join('|')}`;
+  if (seenRoutes.has(key)) return false;
+  seenRoutes.add(key);
+  return true;
+}) };
+const allStops = Array.from(new Set(data.routes.flatMap(route => route.stops))).sort();
+const stopNames = new Map(allStops.map(name => [name.toLowerCase(), name]));
+const routesByStop = new Map<string, BusRoute[]>();
+for (const route of data.routes) for (const stop of new Set(route.stops)) {
+  const routes = routesByStop.get(stop) ?? [];
+  routes.push(route);
+  routesByStop.set(stop, routes);
+}
+export function normalizeStop(name: string) { return stopNames.get(name.trim().toLowerCase()) ?? name.trim(); }
 
 /**
  * Get all unique stop names from the bus data
  */
 export function getAllStops(): string[] {
-  const stops = new Set<string>();
-  data.routes.forEach((route) => {
-    route.stops.forEach((stop) => stops.add(stop));
-  });
-  return Array.from(stops).sort();
+  return allStops;
 }
 
 /**
  * Get all bus numbers
  */
 export function getAllBusNumbers(): string[] {
-  return data.routes.map((r) => r.busNumber).sort();
+  return Array.from(new Set(data.routes.map((r) => r.busNumber))).sort();
 }
 
 /**
@@ -55,16 +67,6 @@ export function searchBuses(query: string): string[] {
 export function getStopLocation(stopName: string): { lat: number | null; lng: number | null } | null {
   const loc = data.stops[stopName];
   if (loc) return loc;
-  // Fallback: search in routes
-  for (const route of data.routes) {
-    if (route.stops.includes(stopName)) {
-      // Return a nearby stop's location as approximation
-      for (let i = 0; i < route.stops.length; i++) {
-        const altLoc = data.stops[route.stops[i]];
-        if (altLoc) return altLoc;
-      }
-    }
-  }
   return null;
 }
 
@@ -103,6 +105,7 @@ function buildRouteSegment(
  */
 export function findDirectRoutes(fromStop: string, toStop: string): DirectRoute[] {
   const results: DirectRoute[] = [];
+  const segments = new Set<string>();
 
   for (const route of data.routes) {
     const fromIdx = route.stops.indexOf(fromStop);
@@ -116,6 +119,9 @@ export function findDirectRoutes(fromStop: string, toStop: string): DirectRoute[
         intermediateStops.push(route.stops[i]);
       }
       const fullRoute = buildRouteSegment(route, fromStop, toStop);
+      const segmentKey = `${route.busNumber}|${fullRoute.map(stop => stop.name).join('|')}`;
+      if (segments.has(segmentKey)) continue;
+      segments.add(segmentKey);
 
       results.push({
         type: 'direct',
@@ -150,12 +156,10 @@ export function findOneChangeRoutes(
   const visited = new Set<string>();
 
   // Find all buses that pass through fromStop
-  const busesFromOrigin = data.routes.filter(
-    (r) => r.stops.includes(fromStop)
-  );
+  const busesFromOrigin = routesByStop.get(fromStop) ?? [];
 
   // Find all buses that pass through toStop
-  const busesToDest = data.routes.filter((r) => r.stops.includes(toStop));
+  const busesToDest = routesByStop.get(toStop) ?? [];
 
   for (const busA of busesFromOrigin) {
     const fromIdxA = busA.stops.indexOf(fromStop);
@@ -242,10 +246,8 @@ export function findTwoChangeRoutes(
   const results: MultiHopRoute[] = [];
   const visited = new Set<string>();
 
-  const busesFromOrigin = data.routes.filter(
-    (r) => r.stops.includes(fromStop)
-  );
-  const busesToDest = data.routes.filter((r) => r.stops.includes(toStop));
+  const busesFromOrigin = routesByStop.get(fromStop) ?? [];
+  const busesToDest = routesByStop.get(toStop) ?? [];
 
   for (const busA of busesFromOrigin) {
     const fromIdxA = busA.stops.indexOf(fromStop);
@@ -256,7 +258,7 @@ export function findTwoChangeRoutes(
       const junction1 = busA.stops[i];
 
       // Find all buses that pass through junction1
-      const busesViaJunction1 = data.routes.filter(
+      const busesViaJunction1 = (routesByStop.get(junction1) ?? []).filter(
         (r) => r.busNumber !== busA.busNumber && r.stops.includes(junction1)
       );
 
@@ -346,7 +348,10 @@ export function findAllRoutes(
   fromStop: string,
   toStop: string
 ): RouteResult[] {
+  fromStop = normalizeStop(fromStop);
+  toStop = normalizeStop(toStop);
   if (!fromStop || !toStop || fromStop === toStop) return [];
+  if (!isValidStop(fromStop) || !isValidStop(toStop)) return [];
 
   // 1. Try direct routes first
   const direct = findDirectRoutes(fromStop, toStop);
@@ -368,7 +373,7 @@ export function findAllRoutes(
  */
 export function getBusByNumber(busNumber: string): BusRoute | null {
   const bus = data.routes.find(
-    (r) => r.busNumber.toLowerCase() === busNumber.toLowerCase()
+    (r) => r.busNumber.toLowerCase() === busNumber.trim().toLowerCase()
   );
   return bus ?? null;
 }
@@ -396,5 +401,5 @@ export function getBusFullRoute(busNumber: string): RouteStop[] | null {
  * Validate if a stop name exists in our data
  */
 export function isValidStop(stopName: string): boolean {
-  return getAllStops().includes(stopName);
+  return stopNames.has(stopName.trim().toLowerCase());
 }

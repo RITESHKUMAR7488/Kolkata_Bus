@@ -26,6 +26,7 @@ export default function RouteCard({ route, index }: RouteCardProps) {
   const handleShowOnMap = () => {
     setSelectedRoute(route);
     setShowMap(true);
+    document.getElementById('route-map')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
   if (route.type === 'direct') {
@@ -54,8 +55,9 @@ function DirectRouteCard({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.08, duration: 0.35, ease: 'easeOut' }}
-      className="bg-white dark:bg-[#1C1C28] rounded-xl border border-[#E5E7EB] dark:border-[#2E2E3E] shadow-sm overflow-hidden transition-colors duration-300"
+      whileHover={{ y: -2, boxShadow: '0 8px 25px -5px rgba(255, 107, 53, 0.1), 0 4px 10px -5px rgba(0, 0, 0, 0.04)' }}
+      transition={{ delay: Math.min(index * 0.04, 0.4), duration: 0.35, ease: 'easeOut' }}
+      className="bg-white dark:bg-[#1C1C28] rounded-xl border border-[#E5E7EB] dark:border-[#2E2E3E] shadow-sm overflow-hidden transition-colors duration-300 card-glow"
     >
       {/* Card Header */}
       <button
@@ -76,12 +78,12 @@ function DirectRouteCard({
 
         {/* Info */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex flex-wrap items-center gap-2 mb-1">
             <span className="inline-flex items-center px-2.5 py-0.5 bg-[#F3F4F6] dark:bg-[#2E2E3E] border border-[#E5E7EB] dark:border-[#3E3E4E] rounded-md text-[13px] font-semibold text-[#1C1C28] dark:text-[#F1F1F4]">
               {route.busNumber}
             </span>
             <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium ${route.busType === 'metro' ? 'bg-[#3B82F6]/10 dark:bg-[#3B82F6]/20 text-[#3B82F6]' : route.busType === 'train' ? 'bg-[#DC2626]/10 dark:bg-[#DC2626]/20 text-[#DC2626]' : 'bg-[#FF6B35]/10 dark:bg-[#FF6B35]/20 text-[#FF6B35]'}`}>
-              {route.busType === 'metro' ? 'Metro' : route.busType === 'train' ? 'Local Train' : route.busType === 'ac' ? 'AC' : 'Suburban'}
+              {route.busType === 'metro' ? 'Metro' : route.busType === 'train' ? 'Local Train' : route.busType === 'ac' ? 'AC' : route.busType === 'private' ? 'Private bus' : route.busType === 'government' ? 'Government bus' : 'Bus'}
             </span>
           </div>
           <p className="text-[13px] text-[#6B7280] dark:text-[#A1A1AA] truncate">
@@ -180,8 +182,9 @@ function MultiHopRouteCard({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.08, duration: 0.35, ease: 'easeOut' }}
-      className="bg-white dark:bg-[#1C1C28] rounded-xl border border-[#E5E7EB] dark:border-[#2E2E3E] shadow-sm overflow-hidden transition-colors duration-300"
+      whileHover={{ y: -2, boxShadow: '0 8px 25px -5px rgba(255, 107, 53, 0.1), 0 4px 10px -5px rgba(0, 0, 0, 0.04)' }}
+      transition={{ delay: Math.min(index * 0.04, 0.4), duration: 0.35, ease: 'easeOut' }}
+      className="bg-white dark:bg-[#1C1C28] rounded-xl border border-[#E5E7EB] dark:border-[#2E2E3E] shadow-sm overflow-hidden transition-colors duration-300 card-glow"
     >
       {/* Card Header */}
       <button
@@ -207,7 +210,7 @@ function MultiHopRouteCard({
         </div>
 
         {/* Junction Info */}
-        <div className="flex items-center gap-2 mb-1.5">
+        <div className="flex flex-wrap items-center gap-2 mb-1.5">
           <Footprints size={14} className="text-[#FF6B35]" />
           <span className="text-[12px] text-[#6B7280] dark:text-[#A1A1AA]">
             Change at: <strong className="text-[#FF6B35]">{route.junctionStop}</strong>

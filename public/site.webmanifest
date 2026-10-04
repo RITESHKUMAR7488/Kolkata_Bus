@@ -10,34 +10,17 @@
   "lang": "en-IN",
   "dir": "ltr",
   "scope": "/",
-  "categories": ["travel", "navigation", "transportation"],
-  "keywords": "Kolkata bus route, metro map, local train, transport planner",
-  "screenshots": [
-    {
-      "src": "/og-image.png",
-      "sizes": "1200x630",
-      "type": "image/png",
-      "label": "Kolkata Travel Router home screen"
-    }
+  "categories": [
+    "travel",
+    "navigation",
+    "transportation"
   ],
   "icons": [
     {
-      "src": "/favicon-16x16.png",
-      "sizes": "16x16",
-      "type": "image/png",
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
       "purpose": "any"
-    },
-    {
-      "src": "/favicon-32x32.png",
-      "sizes": "32x32",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/apple-touch-icon.png",
-      "sizes": "180x180",
-      "type": "image/png",
-      "purpose": "any maskable"
     }
   ],
   "related_applications": [],

@@ -16,8 +16,8 @@ export default function MapLegend({ type }: MapLegendProps) {
       {type === 'train' && (
         <div className="flex flex-col gap-2">
           <label className="text-sm font-semibold text-[#4B5563] dark:text-[#A1A1AA]">Filter Line</label>
-          <select 
-            value={selectedTrainLine || ''} 
+          <select aria-label="Filter train line"
+            value={selectedTrainLine || ''}
             onChange={(e) => setSelectedTrainLine(e.target.value || null)}
             className="bg-[#F9FAFB] dark:bg-[#242434] px-3 py-2.5 rounded-xl border border-[#E5E7EB] dark:border-[#3E3E4E] text-sm font-medium text-[#1C1C28] dark:text-white outline-none cursor-pointer focus:ring-2 focus:ring-[#DC2626]/50 transition-shadow appearance-none pr-8"
             style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundPosition: 'right 0.5rem center', backgroundRepeat: 'no-repeat', backgroundSize: '1.5em 1.5em' }}
@@ -33,7 +33,7 @@ export default function MapLegend({ type }: MapLegendProps) {
 
       <div>
         <h3 className="text-sm font-bold text-[#111118] dark:text-[#F1F1F4] mb-3 flex items-center gap-2">
-          <Train size={18} className={type === 'metro' ? "text-[#FF6B35]" : "text-[#DC2626]"} /> 
+          <Train size={18} className={type === 'metro' ? "text-[#FF6B35]" : "text-[#DC2626]"} />
           {type === 'metro' ? 'Metro Lines' : 'Train Lines'}
         </h3>
         <div className="flex flex-col gap-2.5">
@@ -51,6 +51,7 @@ export default function MapLegend({ type }: MapLegendProps) {
           </div>
         </div>
       </div>
+      <p className="text-xs text-slate-500 dark:text-slate-400">Dataset corridors may include planned sections. Geographic paths are indicative, not verified tracks.</p>
     </div>
   );
 }

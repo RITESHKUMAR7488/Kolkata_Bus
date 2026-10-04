@@ -1,4 +1,6 @@
 import { motion } from 'framer-motion';
+import { useState } from 'react';
+import { useFavourites } from '@/hooks/useFavourites';
 import type { BusRoute } from '@/types';
 import { getBusFullRoute } from '@/lib/routingEngine';
 import { useAppStore } from '@/store/useAppStore';
@@ -11,12 +13,16 @@ interface BusDetailTimelineProps {
 export default function BusDetailTimeline({ bus }: BusDetailTimelineProps) {
   const fullRoute = getBusFullRoute(bus.busNumber);
   const setShowMap = useAppStore((s) => s.setShowMap);
+  const { toggleFavourite, isFavourite } = useFavourites();
+  const [shareMessage, setShareMessage] = useState('');
+  const from = bus.stops[0], to = bus.stops[bus.stops.length - 1];
+  const url = `${window.location.origin}/?bus=${encodeURIComponent(bus.busNumber)}`;
 
   if (!fullRoute) return null;
 
   const totalStops = fullRoute.length;
-  const estimatedFare = bus.type === 'ac' ? 'Rs 20-35' : 'Rs 10-20';
-  const frequency = bus.type === 'ac' ? 'Every 20 min' : 'Every 10-15 min';
+  const estimatedFare = 'Confirm onboard';
+  const frequency = 'Not verified';
 
   return (
     <motion.div
@@ -31,13 +37,13 @@ export default function BusDetailTimeline({ bus }: BusDetailTimelineProps) {
           <div className="w-12 h-12 rounded-xl bg-[#FF6B35]/10 dark:bg-[#FF6B35]/20 flex items-center justify-center">
             <Bus size={24} className="text-[#FF6B35]" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-lg font-bold text-[#1C1C28] dark:text-[#F1F1F4]">
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="text-lg break-words font-bold text-[#1C1C28] dark:text-[#F1F1F4]">
                 {bus.busNumber}
               </h2>
               <span className="px-2 py-0.5 bg-[#008080]/10 dark:bg-[#008080]/20 rounded-md text-[11px] font-medium text-[#008080]">
-                {bus.type === 'ac' ? 'AC Bus' : 'Suburban'}
+                {bus.type === 'ac' ? 'AC Bus' : bus.type === 'private' ? 'Private bus' : bus.type === 'government' ? 'Government bus' : bus.type === 'metro' ? 'Metro' : bus.type === 'train' ? 'Local train' : 'Bus'}
               </span>
             </div>
             <p className="text-[13px] text-[#6B7280] dark:text-[#A1A1AA]">
@@ -68,19 +74,21 @@ export default function BusDetailTimeline({ bus }: BusDetailTimelineProps) {
         {/* Action Buttons */}
         <div className="flex gap-2 mt-4">
           <button
-            onClick={() => setShowMap(true)}
+            onClick={() => { setShowMap(true); document.getElementById('route-map')?.scrollIntoView({ behavior: 'smooth' }); }}
             className="flex-1 h-10 bg-[#FF6B35] text-white rounded-lg text-[13px] font-semibold flex items-center justify-center gap-2 hover:bg-[#E55A2B] active:bg-[#D44F24] transition-colors ripple"
           >
             <Navigation size={14} />
             View on Map
           </button>
-          <button className="w-10 h-10 bg-[#F3F4F6] dark:bg-[#2E2E3E] rounded-lg flex items-center justify-center text-[#6B7280] dark:text-[#A1A1AA] hover:bg-[#E5E7EB] dark:hover:bg-[#3E3E4E] transition-colors">
+          <button aria-label="Copy bus route link" onClick={async () => { try { await navigator.clipboard.writeText(url); setShareMessage('Bus route link copied.'); } catch { setShareMessage('Copy the route link below.'); } }} className="w-10 h-10 bg-[#F3F4F6] dark:bg-[#2E2E3E] rounded-lg flex items-center justify-center text-[#6B7280] dark:text-[#A1A1AA] hover:bg-[#E5E7EB] dark:hover:bg-[#3E3E4E] transition-colors">
             <Share2 size={16} />
           </button>
-          <button className="w-10 h-10 bg-[#F3F4F6] dark:bg-[#2E2E3E] rounded-lg flex items-center justify-center text-[#6B7280] dark:text-[#A1A1AA] hover:bg-[#E5E7EB] dark:hover:bg-[#3E3E4E] transition-colors">
-            <Bookmark size={16} />
+          <button aria-label={isFavourite(from, to) ? 'Remove saved journey' : 'Save this journey'} onClick={() => toggleFavourite(from, to)} className="w-10 h-10 bg-[#F3F4F6] dark:bg-[#2E2E3E] rounded-lg flex items-center justify-center text-[#6B7280] dark:text-[#A1A1AA] hover:bg-[#E5E7EB] dark:hover:bg-[#3E3E4E] transition-colors">
+            <Bookmark size={16} fill={isFavourite(from, to) ? 'currentColor' : 'none'} />
           </button>
         </div>
+        <p role="status" className="text-xs mt-2">{shareMessage}</p>
+        <details className="text-xs break-all"><summary className="cursor-pointer py-2">Bus route link</summary><a href={url}>{url}</a></details>
       </div>
 
       {/* Full Timeline Card */}
@@ -96,7 +104,7 @@ export default function BusDetailTimeline({ bus }: BusDetailTimelineProps) {
 
             return (
               <motion.div
-                key={stop.name}
+                key={`${stop.name}-${i}`}
                 initial={{ opacity: 0, x: -12 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: Math.min(i * 0.025, 0.5), duration: 0.2 }}

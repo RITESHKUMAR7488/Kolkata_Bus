@@ -1,4 +1,4 @@
-import { findAllRoutes, getBusByNumber } from './src/lib/routingEngine';
+import { findAllRoutes } from './src/lib/routingEngine';
 
 console.log('Testing routing...');
 

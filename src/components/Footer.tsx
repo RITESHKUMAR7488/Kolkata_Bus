@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion';
 import { useAppStore } from '@/store/useAppStore';
 import { Bus, Ship, Train, MapPin, Star, Share2, LocateFixed, Moon, Sun, Smartphone, Gift } from 'lucide-react';
 
@@ -58,13 +59,14 @@ export default function Footer() {
                 { icon: <Ship size={13} />, label: 'Hooghly River Ferry', tab: 'ferry' as const },
               ].map(({ icon, label, tab }) => (
                 <li key={label}>
-                  <button
+                  <motion.button
                     onClick={() => { setActiveTab(tab); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                    whileHover={{ x: 4 }}
                     className="flex items-center gap-2 text-[13px] text-[#6B7280] dark:text-[#A1A1AA] hover:text-[#FF6B35] dark:hover:text-[#FF6B35] transition-colors"
                   >
                     <span className="text-[#9CA3AF]">{icon}</span>
                     {label}
-                  </button>
+                  </motion.button>
                 </li>
               ))}
             </ul>
@@ -85,10 +87,14 @@ export default function Footer() {
                 { icon: <Smartphone size={13} />, label: 'Mobile Friendly' },
                 { icon: <Gift size={13} />, label: 'Completely Free' },
               ].map(({ icon, label }) => (
-                <li key={label} className="flex items-center gap-2 text-[13px] text-[#6B7280] dark:text-[#A1A1AA]">
+                <motion.li
+                  key={label}
+                  whileHover={{ x: 4 }}
+                  className="flex items-center gap-2 text-[13px] text-[#6B7280] dark:text-[#A1A1AA]"
+                >
                   <span className="text-[#9CA3AF]">{icon}</span>
                   {label}
-                </li>
+                </motion.li>
               ))}
             </ul>
           </div>

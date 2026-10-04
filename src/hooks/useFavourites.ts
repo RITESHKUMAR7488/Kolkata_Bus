@@ -5,14 +5,17 @@ const KEY = 'ktr_favourites';
 
 function load(): FavouriteRoute[] {
   try {
-    return JSON.parse(localStorage.getItem(KEY) ?? '[]');
+    const value: unknown = JSON.parse(localStorage.getItem(KEY) ?? '[]');
+    return Array.isArray(value) ? value.filter((item): item is FavouriteRoute => item && typeof item.from === 'string' && typeof item.to === 'string' && typeof item.savedAt === 'number').slice(0, 10) : [];
   } catch {
     return [];
   }
 }
 
 function save(items: FavouriteRoute[]) {
-  localStorage.setItem(KEY, JSON.stringify(items));
+  try { localStorage.setItem(KEY, JSON.stringify(items)); } catch { /* Storage can be disabled. */ }
+  // The native storage event only fires in other tabs.
+  queueMicrotask(() => window.dispatchEvent(new Event('ktr-favourites-changed')));
 }
 
 export function useFavourites() {
@@ -22,7 +25,8 @@ export function useFavourites() {
   useEffect(() => {
     const handler = () => setFavourites(load());
     window.addEventListener('storage', handler);
-    return () => window.removeEventListener('storage', handler);
+    window.addEventListener('ktr-favourites-changed', handler);
+    return () => { window.removeEventListener('storage', handler); window.removeEventListener('ktr-favourites-changed', handler); };
   }, []);
 
   const isFavourite = useCallback(
